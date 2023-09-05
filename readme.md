@@ -24,7 +24,7 @@ https://discord.com/developers/applications
 * Create an Application and name it `LARPBot`
 * Inside the application settings, go to the Bot tab and give it the `LARPBot` username.
 * Copy the token from this page. If you can't find it, you can reset the token.
-* Put the token you get in a file named `.env` in the project directory with: `DISCORD_TOOKEN=YOUR_COPIED_TOKEN`
+* Put the token you get in a file named `.env` in the project directory with: `DISCORD_TOKEN=YOUR_COPIED_TOKEN`
 * On the Bot page, scroll down to Bot Permissions.
   * Enable the `Message Content Intent`
 * Go to the `OAuth2` page, then `URL Generator` and select the `bot` scope, then in `Bot Permissions`:
