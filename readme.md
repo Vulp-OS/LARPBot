@@ -3,7 +3,19 @@
 A discord bot to help with LARP Crafting checks.
 It runs continuously, listening for commands on connected Discord Servers
 
-# Setup:
+## Usage:
+Once the bot has been added to your server and is running, you can use slash commands to interact with it.
+
+The bot listens for messages that start with `/LARPBot`. The currently-supported functions are:
+* random
+  * Example: `/LARPBot random min:0 max:20`
+* craft
+  * Example: `/LARPBot craft trial:3 stars:3 adjustment:10 guess:15`
+  * The context for these flags is found in the RS-CER LARP 2nd Edition manual
+
+To receive help from the bot about which functions are available, use `/LARPBot` without specifying a command. To receive more specific help for a function, use `/LARPBot function_name` without any further input. 
+
+## Setup:
 
 ### Discord Setup
 To use this Discord Bot, you must create an application and bot on the Discord Devlopers page.
