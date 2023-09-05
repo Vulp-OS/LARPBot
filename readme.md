@@ -1,3 +1,5 @@
+![CodeQL](https://github.com/Vulp-OS/LARPBot/actions/workflows/github-code-scanning/codeql/badge.svg)
+
 # LARPBot
 
 A discord bot to help with LARP Crafting checks.
