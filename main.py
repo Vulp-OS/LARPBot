@@ -139,17 +139,28 @@ cryptorand = SystemRandom()
 
 @client.event
 async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
+    guilds = [guild async for guild in client.fetch_guilds(limit=1)]
+    print(f'LARPBot is ready! The following guilds are visible:')
+    for guild in guilds:
+        print(f'\t{guild.name} as {client.user}')
+
+    print("\nListening for Messages...\n")
 
 
 @client.event
 async def on_message(message):
+    if message.author != client.user:
+        print(f'We have received a message:\n\t{message.content}\n')
     if message.content.startswith("/LARPBot"):
+        print(f'The received message is intended for LARPBot! Parsing...')
         if message.content == "/LARPBot":
+            print(f'The received message was unqualified. Replying with Usage Information...\n')
             await message.channel.send(f'LARPBot Usage information:\n\tSupported Functions are:\n\t\trandom\n\t\tcraft\n\nTo get help on a specific function, type ```/LARPBot function_name```')
         elif message.content.startswith("/LARPBot random"):
+            print(f'The received message is requesting a random number. Parsing...\n')
             await process_random(message)
         elif message.content.startswith("/LARPBot craft"):
+            print(f'The received message is requesting a crafting check. Parsing...\n')
             await process_craft(message)
 
 
