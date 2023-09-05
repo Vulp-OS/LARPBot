@@ -19,16 +19,21 @@ To receive help from the bot about which functions are available, use `/LARPBot`
 
 ## Setup:
 
+### Obtain the Code
+You can download a zip of the code from GitHub, or you can clone the code to make future updates easier.
+```
+git clone git@github.com/Vulp-OS/LARPBot.git
+```
+To apply future updates, you can use `git pull`.
+
 ### Discord Setup
-To use this Discord Bot, you must create an application and bot on the Discord Devlopers page.
-https://discord.com/developers/applications
+To use this Discord Bot, you must create an application and bot on the [Discord Devlopers](https://discord.com/developers/applications) page.
 
 * Create an Application and name it `LARPBot`
 * Inside the application settings, go to the Bot tab and give it the `LARPBot` username.
-* Copy the token from this page. If you can't find it, you can reset the token.
-* Put the token you get in a file named `.env` in the project directory with: `DISCORD_TOKEN=YOUR_COPIED_TOKEN`
-* On the Bot page, scroll down to Bot Permissions.
-  * Enable the `Message Content Intent`
+* Copy the token from this page. If you can't find it, you can reset the token. (Resetting the token will invalidate the old token)
+* Put the token you get in a new file named `.env` in the project directory that contains: `DISCORD_TOKEN=YOUR_COPIED_TOKEN`
+* On the Bot page, enable the `Message Content Intent`. **Make sure you save your changes!**
 * Go to the `OAuth2` page, then `URL Generator` and select the `bot` scope, then in `Bot Permissions`:
   * Send Messages
   * Create Public Threads
@@ -39,18 +44,19 @@ https://discord.com/developers/applications
 * Disable the bot's access to All Channels, then click `Add Channels` to select the channels it is authorized on.
 
 ### App Config
-You need Python >=3.11, and we need a virtual environment to install the required libraries to.
+This was developed and tested on Python >=3.11. It may work on earlier versions, but has not been tested. It is recommended that a virtual environment is used to install the required libraries.
 In the app directory on Linux, run:
 ```
-python3.11 -mvenv venv
+python -mvenv venv
 source ./venv/bin/activate
 ```
 
 If you're on Windows, use PowerShell, then:
 ```
-python3.11 -mvenv venv
+python -mvenv venv
 .\venv\Scripts\activate.ps1
 ```
+Note: You may need to allow script execution using the `Set-ExecutionPolicy` command.
 
 Once you have the virtual environment activated on the appropriate platform, install the required packages:
 ```
