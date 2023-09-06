@@ -14,6 +14,8 @@ import os
 from random import SystemRandom  # Use a random generator that is considered "cryptographically secure"
 
 import discord
+from discord import app_commands
+from discord.ext import commands
 import dotenv
 
 
@@ -31,13 +33,13 @@ def get_args(message):
                              for element in message.split(' ')))
 
 
-async def check_success(message, guess, adjustment, result, leverage):
+async def check_success(interaction, guess, adjustment, result, leverage):
     """
     This function compares the discord user's guess and their adjustment range to the
     radomly generated number that corresponds to the specified star/difficulty level.
     Outputs to the discord channel with results.
 
-    :param message: The discord message received by the on_message event
+    :param interaction: The discord bot interaction received by the command
     :param guess: The discord user's guess at the random number
     :param adjustment: The amount to adjust the discord user's effective guess range by
     :param result: The result of the random roll made by the system for the relevant trial star/difficulty level
@@ -56,112 +58,118 @@ async def check_success(message, guess, adjustment, result, leverage):
 
     check_set = success_range.intersection(guess_range)
     if guess == result:
-        await message.channel.send(
+        await interaction.response.send_message(
             f'Your crafting check was a critical success! Your guess was {guess}, which matched the generated Trial value of {result} exactly!'
         )
     elif len(check_set) != 0:
-        await message.channel.send(
+        await interaction.response.send_message(
             f'Your crafting check succeeded. Your guess was {guess}. It covered an effective range of: {min(guess_range)}-{max(guess_range)}.\n\nThe random number was {result}. The range your effective number needed to fall inside of was: {min(success_range)} - {max(success_range)}'
         )
     else:
-        await message.channel.send(
+        await interaction.response.send_message(
             f'Your crafting check failed. Your guess was {guess}. It covered an effective range of: {min(guess_range)}-{max(guess_range)}.\n\nThe random number was {result}. The range your effective number needed to fall inside of was: {min(success_range)} - {max(success_range)}'
         )
+    return 0
 
 
-async def process_random(message):
-    if message.content == "/LARPBot random" or message.content == "/LARPBot random ":
-        await message.channel.send(f'To use the random function, provide your desired rage in the format:```/LARPBot random min:minimum_number max:max_number```')
-    else:
-        try:
-            stripped_message = message.content.replace("/LARPBot random ", '')
-            args = get_args(stripped_message)
-
-            result = cryptorand.randrange(int(args['min']), int(args['max'])+1)
-
-            await message.channel.send(f'Random Number is: {result}')
-        except (Exception,):
-            await message.channel.send(f'Encountered an issue with the formatting of your request for a random number:\n```{message.content}\nPlease ensure there are no typos, you only provided min:number max:number, and that there are no excess spaces')
-
-
-async def process_craft(message):
-    stripped_message = message.content.replace("/LARPBot craft", '')
-    if stripped_message == "" or stripped_message == " ":
-        await message.channel.send(f'To craft, use: ```/LARPBot craft trial:check_difficulty_as_a_number stars:star_count adjustment:adjustment_number guess:your_guess```\n\tExample: ```/LARPBot craft trial:3 stars:3 adjustment:13 guess:14```')
-        await message.channel.send(f'Use the following stat as your adjustment number for the corresponding crafting type:\n\tApothecary (Alchemy): Wits\n\tArcane Scribe (Scribing): Magic\n\tArmorer (Armor Smithing): Willpower\n\tEnchanter (Imbuing): Magic\n\tTinkerer (Tinkering): Luck\n\tWeapon Smith (Weapon Smithing): Might\n\nTrial Check should be provided as a number 0-5, mapped from trivial to impossible.\n\tTrivial: 0\n\tEasy: 1\n\tMedium: 2\n\tModerate: 3\n\tHard: 4\n\tImpossible: 5')
-    else:
-        try:
-            stripped_message = stripped_message.lstrip()
-            args = get_args(stripped_message)
-            guess = int(args['guess'])
-            adjustment = int(args['adjustment'])
-
-            # Trial difficulty calculation. Question Mark always = 5
-            # Trivial (0) checks are the only ones that don't adhere to the equation used below
-            if args['trial'] == "?":
-                args['trial'] = '5'
-
-            match args['trial']:
-                case '0':
-                    leverage = 12
-                case _:
-                    leverage = math.floor(8/(2**(int(args['trial']-1))))
-
-            # Star count determines the range to "roll". Question Mark always = 5
-            # 0 is the only value that doesn't adhere to the equation used below:
-            if args['stars'] == "?":
-                args['stars'] = '5'
-
-            match args['stars']:
-                case '0':
-                    result = cryptorand.randrange(0, 10+1)
-                case _:
-                    result = cryptorand.randrange(0, (int(args['stars'])*10)+1)
-
-            await check_success(message, guess, adjustment, result, leverage)
-
-        except (Exception,):
-            await message.channel.send(f'Failed to process your message:\n\t```{message.content}```\nPlease ensure you only used one space between each argument, there are no typos, and you provided arguments in the format argument:value.')
-        else:
-            print("Crafting Message was Successfully Processed")
-
-
-# Press the green button in the gutter to run the script.
 # if __name__ == '__main__':
 dotenv.load_dotenv(dotenv_path=".env")
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 intents = discord.Intents(messages=True, message_content=True)
-client = discord.Client(intents=intents)
+bot = commands.Bot(
+    command_prefix='/',
+    description='RS-CER LARP Bot for Crafting Checks',
+    intents=intents,
+    help_command=None
+)
 
 cryptorand = SystemRandom()
 
 
-@client.event
+@bot.tree.command(name="craft", description="Ask LARPBot to perform a Crafting Trial for you")
+@app_commands.describe(
+    trial="The Trial rating you are crafting against",
+    stars="The Star rating you are crafting against",
+    adjustment="Your adjustment value for the stat you're crafting with",
+    guess="Your guess between 0 and 20"
+)
+async def craft(interaction: discord.Interaction, trial: int, stars: int, adjustment: int, guess: int):
+    print(f'Received Command to perform a Trial...')
+    try:
+        # Trial difficulty calculation.
+        # Trivial (0) checks are the only ones that don't adhere to the equation used below
+        match trial:
+            case 0:
+                leverage = 12
+            case _:
+                leverage = math.floor(8/(2**(int(trial-1))))
+
+        # Star count determines the range to "roll".
+        # 0 is the only value that doesn't adhere to the equation used below:
+        match stars:
+            case 0:
+                result = cryptorand.randrange(0, 10+1)
+            case _:
+                result = cryptorand.randrange(0, (stars*10)+1)
+
+        await check_success(interaction, guess, adjustment, result, leverage)
+
+    except (Exception,):
+        await interaction.response.send_message(f'Failed to process your message!\nPlease ensure you only used one space between each argument, there are no typos, and you provided arguments in the format argument:value.')
+    finally:
+        print("Command for Crafting was Successfully Processed\n")
+        return 0
+
+
+@bot.tree.command(name="random", description="Have LARPBot generate a random number for you")
+@app_commands.describe(
+    low="The bottom end of the random range",
+    high="The upper end of the random range"
+)
+async def random(interaction: discord.Interaction, low: int, high: int):
+    print(f'Received Command to generate a random number between {low} and {high}...')
+    try:
+        result = cryptorand.randrange(low, high+1)
+
+        await interaction.response.send_message(f'Random Number is: {result}')
+    except (Exception,):
+        await interaction.response.send_message(f'Encountered an issue with the formatting of your request for a random number!\nPlease ensure there are no typos, you only provided min:number max:number, and that there are no excess spaces')
+    finally:
+        print("Command for Random was Successfully Processed\n")
+        return 0
+
+
+@bot.tree.command(name="larp-help", description="Ask LARPBot for help")
+@app_commands.describe(
+    help_term="The function you'd like help with. Currently, you can provide 'random' or 'craft' here."
+)
+async def larphelp(interaction: discord.Interaction, help_term: str):
+    try:
+        if help_term == "craft":
+            message = f'To craft, use: ```/craft trial:check_difficulty_as_a_number stars:star_count adjustment:adjustment_number guess:your_guess```\n\tExample: ```/craft trial:3 stars:3 adjustment:13 guess:14```\n'
+            message += f'Use the following stat as your adjustment number for the corresponding crafting type:\n\tApothecary (Alchemy): Wits\n\tArcane Scribe (Scribing): Magic\n\tArmorer (Armor Smithing): Willpower\n\tEnchanter (Imbuing): Magic\n\tTinkerer (Tinkering): Luck\n\tWeapon Smith (Weapon Smithing): Might\n\nTrial Check should be provided as a number 0-5, mapped from trivial to impossible.\n\tTrivial: 0\n\tEasy: 1\n\tMedium: 2\n\tModerate: 3\n\tHard: 4\n\tImpossible: 5'
+            await interaction.response.send_message(message)
+        elif help_term == "random":
+            await interaction.response.send_message(f'To use the random function, provide your desired rage in the format:```/random min:minimum_number max:max_number```')
+        else:
+            await interaction.response.send_message(f'Help Command not recognized!\nLARPBot Usage information:\n\tSupported Functions are:\n\t\trandom\n\t\tcraft\n\nTo get help on a specific function, type ```/help function_name```')
+    except (Exception,):
+        await interaction.response.send_message(f'Experienced an issue processing your help request.\nLARPBot Usage information:\n\tSupported Functions are:\n\t\trandom\n\t\tcraft\n\nTo get help on a specific function, type ```/help function_name```')
+    finally:
+        print("Command for Help was Successfully Processed\n")
+        return 0
+
+
+@bot.event
 async def on_ready():
-    guilds = [guild async for guild in client.fetch_guilds(limit=1)]
+    await bot.tree.sync()
+    guilds = [guild async for guild in bot.fetch_guilds(limit=1)]
     print(f'LARPBot is ready! The following guilds are visible:')
     for guild in guilds:
-        print(f'\t{guild.name} as {client.user}')
+        print(f'\t{guild.name} as {bot.user}')
 
     print("\nListening for Messages...\n")
 
 
-@client.event
-async def on_message(message):
-    if message.author != client.user:
-        print(f'We have received a message:\n\t{message.content}\n')
-    if message.content.startswith("/LARPBot"):
-        print(f'The received message is intended for LARPBot! Parsing...')
-        if message.content == "/LARPBot":
-            print(f'The received message was unqualified. Replying with Usage Information...\n')
-            await message.channel.send(f'LARPBot Usage information:\n\tSupported Functions are:\n\t\trandom\n\t\tcraft\n\nTo get help on a specific function, type ```/LARPBot function_name```')
-        elif message.content.startswith("/LARPBot random"):
-            print(f'The received message is requesting a random number. Parsing...\n')
-            await process_random(message)
-        elif message.content.startswith("/LARPBot craft"):
-            print(f'The received message is requesting a crafting check. Parsing...\n')
-            await process_craft(message)
-
-
-client.run(TOKEN)
+bot.run(TOKEN)
