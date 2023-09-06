@@ -8,14 +8,9 @@ It runs continuously, listening for commands on connected Discord Servers
 ## Usage:
 Once the bot has been added to your server and is running, you can use slash commands to interact with it.
 
-The bot listens for messages that start with `/LARPBot`. The currently-supported functions are:
-* random
-  * Example: `/LARPBot random min:0 max:20`
-* craft
-  * Example: `/LARPBot craft trial:3 stars:3 adjustment:10 guess:15`
+The bot listens for the following slash-commands: `/larp-help`, `/random`, `/craft`.
+* When you use a slash-command, a short description is provided, and the values needed for the command are listed, each with their own descriptions.
   * The context for these flags is found in the RS-CER LARP 2nd Edition manual
-
-To receive help from the bot about which functions are available, use `/LARPBot` without specifying a command. To receive more specific help for a function, use `/LARPBot function_name` without any further input. 
 
 ## Setup:
 
