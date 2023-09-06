@@ -1,4 +1,4 @@
-![CodeQL](https://github.com/Vulp-OS/LARPBot/actions/workflows/github-code-scanning/codeql/badge.svg)
+![CodeQL](https://github.com/Vulp-OS/LARPBot/actions/workflows/github-code-scanning/codeql/badge.svg) ![Qodana](https://github.com/Vulp-OS/LARPBot/actions/workflows/qodana_code_quality.yml/badge.svg)
 
 # LARPBot
 
