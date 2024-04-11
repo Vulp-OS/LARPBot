@@ -55,7 +55,7 @@ async def check_success(interaction, guess, adjustment, result, leverage):
     if adjustment == 0:
         guess_range = {guess}
     else:
-        guess_range = range(guess-adjustment, guess+adjustment)
+        guess_range = range(guess-adjustment, guess+adjustment+1)
 
     check_set = success_range.intersection(guess_range)
     if guess == result:
