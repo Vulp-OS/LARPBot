@@ -106,7 +106,7 @@ async def craft(interaction: discord.Interaction, trial: int, stars: int, adjust
 
     try:
         # Trial is used to determine range of numbers from 'result' that would be successful.
-        leverage = trial - 5
+        leverage = 5 - trial
         if leverage < 0:
             leverage = 0
 
