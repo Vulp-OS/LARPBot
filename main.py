@@ -102,14 +102,13 @@ cryptorand = SystemRandom()
 )
 async def craft(interaction: discord.Interaction, trial: int, stars: int, adjustment: int, guess: int):
     print(f'Received Command to perform a Trial...')
+
+
     try:
-        # Trial difficulty calculation.
-        # Trivial (0) checks are the only ones that don't adhere to the equation used below
-        match trial:
-            case 0:
-                leverage = 12
-            case _:
-                leverage = math.floor(8/(2**(int(trial-1))))
+        # Trial is used to determine range of numbers from 'result' that would be successful.
+        leverage = trial - 5
+        if leverage < 0:
+            leverage = 0
 
         # Star count determines the range to "roll".
         # 0 is the only value that doesn't adhere to the equation used below:
@@ -120,7 +119,6 @@ async def craft(interaction: discord.Interaction, trial: int, stars: int, adjust
                 result = cryptorand.randrange(0, (stars*10)+1)
 
         await check_success(interaction, guess, adjustment, result, leverage)
-
     except (Exception,):
         await interaction.response.send_message(
             f'Failed to process your message!\nPlease ensure you only used one space between each argument, there are '
@@ -165,7 +163,8 @@ async def larphelp(interaction: discord.Interaction, help_term: str):
                         f'Smithing): Willpower\n\tEnchanter (Imbuing): Magic\n\tTinkerer (Tinkering): Luck\n\tWeapon '
                         f'Smith (Weapon Smithing): Might\n\nTrial Check should be provided as a number 0-5, '
                         f'mapped from trivial to impossible.\n\tTrivial: 0\n\tEasy: 1\n\tMedium: 2\n\tModerate: '
-                        f'3\n\tHard: 4\n\tImpossible: 5')
+                        f'3\n\tHard: 4\n\tImpossible: 5\n\n')
+            message += (f'Trials higher than 5 will be treated as 5. Stars higher than 5 will scale by 10 per increase.')
             await interaction.response.send_message(message)
         elif help_term == "random":
             await interaction.response.send_message(f'To use the random function, provide your desired rage in the '
